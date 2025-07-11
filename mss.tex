@@ -4,7 +4,7 @@
 
 \addbibresource{mss.bib}
 
-% \newcommand{\authorname}{}
+\newcommand{\authorname}{Thomas Lindstrom-Vautrin}
 \newcommand{\authorpatp}{\patp{niblyx-malnus}}
 % \newcommand{\affiliation}{Kamp Kikakee}
 
@@ -28,7 +28,7 @@
 
 %%MANUSCRIPT
 \title{Deriving Nock Opcodes 6–11}
-\author{\authorpatp}
+\author{\authorname~\authorpatp}
 \date{}
 
 \begin{document}
@@ -552,6 +552,7 @@ First, we want to create a cell:
 =new-cell [[0 2] 2 [0 3] 1 new-params]
 \end{lstlisting}
 
+\noindent
 And we want to call the head of this new cell on itself:
 
 \begin{lstlisting}[style=listingblock]
@@ -569,6 +570,7 @@ y := [y /[x+1 z]]
 z := z
 \end{lstlisting}
 
+\noindent
 Else (if \lstinline[style=inlinecode]{x} is odd), return the following parameter updates:
 
 \begin{lstlisting}[style=listingblock]
@@ -721,6 +723,7 @@ Now we need to actually get our modified decrement to count up to \lstinline[sty
 [params-formula [counter iseven floorhalf] x y z]
 \end{lstlisting}
 
+\noindent
 We want to call \lstinline[style=inlinecode]{params-formula} on:
 
 \begin{lstlisting}[style=listingblock]
@@ -728,6 +731,7 @@ We want to call \lstinline[style=inlinecode]{params-formula} on:
                  new-floorhalf] x y z]
 \end{lstlisting}
 
+\noindent
 We can do this by calling:
 
 \begin{lstlisting}[style=listingblock]
@@ -735,6 +739,7 @@ We can do this by calling:
   [new-counter new-iseven new-floorhalf] 0 7]
 \end{lstlisting}
 
+\noindent
 \lstinline[style=inlinecode]{[[0 2] [new-counter new-iseven new-floorhalf 0 7]]} creates the new subject as a cell and the opcode 9 launches the head \lstinline[style=inlinecode]{2} on this new subject.
 
 \begin{lstlisting}[style=listingblock]
@@ -743,12 +748,14 @@ We can do this by calling:
               0 7] 1 2 [0 1] 0 2]
 \end{lstlisting}
 
+\noindent
 Now let's actually update these values. \lstinline[style=inlinecode]{new-counter} is easy enough. It just increments the existing counter.
 
 \begin{lstlisting}[style=listingblock]
 =new-counter [4 0 12]
 \end{lstlisting}
 
+\noindent
 \lstinline[style=inlinecode]{new-iseven} checks \lstinline[style=inlinecode]{iseven} then returns \lstinline[style=inlinecode]{1} if yes or \lstinline[style=inlinecode]{0} if no.
 
 \begin{lstlisting}[style=listingblock]
@@ -757,6 +764,7 @@ Now let's actually update these values. \lstinline[style=inlinecode]{new-counter
              2 [1 2 3] [1 0] 4 4 iseven]
 \end{lstlisting}
 
+\noindent
 \lstinline[style=inlinecode]{new-floorhalf} checks \lstinline[style=inlinecode]{iseven} and returns \lstinline[style=inlinecode]{floorhalf} if yes or \lstinline[style=inlinecode]{+(floorhalf)} if no.
 
 \begin{lstlisting}[style=listingblock]
@@ -765,6 +773,7 @@ Now let's actually update these values. \lstinline[style=inlinecode]{new-counter
                 2 [1 2 3] [1 0] 4 4 iseven]
 \end{lstlisting}
 
+\noindent
 Okay! We have written our \lstinline[style=inlinecode]{#} hax edit operator as a Nock formula consisting of only Nocks 0 through 5. Very exciting! Let's put it together and see what it looks like. If you would like to try this yourself, copy and paste the following code in the dojo.
 
 \begin{lstlisting}[style=listingcode]
@@ -910,24 +919,29 @@ We now have our \lstinline[style=inlinecode]{#} hax operator. The last thing we 
 *[a 10 [b c] d] == #[b *[a c] *[a d]]
 \end{lstlisting}
 
+\noindent
 Recall that we wrote \lstinline[style=inlinecode]{#} hax such that:
 
 \begin{lstlisting}[style=listingblock]
 *[[x y z] hax] == #[x y z]
 \end{lstlisting}
 
+\noindent
 We can now rewrite this as:
 
 \begin{lstlisting}[style=listingblock]
-*[a 10 [b c] d] == *[[b *[a c] *[a d]] hax] ==
+*[a 10 [b c] d] ==
+  *[[b *[a c] *[a d]] hax] ==
   *[[*[a 1 b] *[a c d]] *[a 1 hax]] ==
   *[*[a [1 b] c d] *[a 1 hax]] ==
   *[a 2 [[1 b] c d] 1 hax]
 =nock-ten [2 [[1 b] c d] 1 hax]
 \end{lstlisting}
 
+\noindent
 And that's it. Congratulations! You have now derived all the Nock opcodes from 6 to 11 using only opcodes 0 through 5. What you will accomplish with this knowledge, I tremble to imagine.
 
+\newpage
 \subsection*{Nock 10 Primitive Equivalent}
 
 \begin{lstlisting}[style=listingcode]
