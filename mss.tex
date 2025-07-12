@@ -57,7 +57,7 @@ Nock 10 is not expressed in this way, however. It is expressed in terms of the \
 \end{lstlisting}
 
 \noindent
-While opcode 10 was introduced in the decrement from Nock 5K to Nock 4K, it is still fundamentally based on the principles established by the earlier opcodes.  Ultimately, we can express \lstinline[style=inlinecode]{#} in terms of opcodes 0 through 5, but we will find that it is not trivial. In fact, we have a hint as to how to do so in the definition of the \lstinline[style=inlinecode]{#} hax edit operator.
+While opcode 10 was introduced in the decrement from Nock 5K to Nock 4K, it is still fundamentally based on the principles established by the earlier opcodes.  Ultimately, we can express \lstinline[style=inlinecode]{#} hax in terms of opcodes 0 through 5, but we will find that it is not trivial. In fact, we have a hint as to how to do so in the definition of the \lstinline[style=inlinecode]{#} hax edit operator.
 
 \begin{lstlisting}[style=listingblock]
 #[1 a b] ============ a
@@ -142,6 +142,7 @@ Nock 9 is the ``function invocation" opcode. It performs some function \lstinlin
 *[a 9 b c] == *[*[a c] 2 [0 1] 0 b]
 \end{lstlisting}
 
+\noindent
 Much of the work here is already done for us. We have a formula \lstinline[style=inlinecode]{[2 [0 1] 0 b]} being applied to the result of a formula \lstinline[style=inlinecode]{c} being applied to subject \lstinline[style=inlinecode]{a}. This is just Nock 7 \lstinline[style=inlinecode]{*[a 7 c 2 [0 1] 0 b]} which is just Nock 2
 \lstinline[style=inlinecode]{*[a 2 c 1 2 [0 1] 0 b]}.
 
@@ -174,15 +175,28 @@ Of all the opcodes so far, Nock 6 is the most complex. It is the if-then-else op
 *[a 6 b c d] == *[a *[[c d] 0 *[[2 3] 0 *[a 4 4 b]]]]
 \end{lstlisting}
 
+\noindent
 Instead of working backwards from this formula, let's derive it ourselves. First, let's select \lstinline[style=inlinecode]{c} or \lstinline[style=inlinecode]{d} from a cell \lstinline[style=inlinecode]{[c d]} based on whether \lstinline[style=inlinecode]{*[a b]} is \lstinline[style=inlinecode]{0} or \lstinline[style=inlinecode]{1}. If \lstinline[style=inlinecode]{*[a b]} is \lstinline[style=inlinecode]{0} we want to slot into the head of \lstinline[style=inlinecode]{[c d]} at address \lstinline[style=inlinecode]{2} and if \lstinline[style=inlinecode]{*[a b]} is \lstinline[style=inlinecode]{1} we want to slot into the tail of \lstinline[style=inlinecode]{[c d]} at address \lstinline[style=inlinecode]{3}. With \lstinline[style=inlinecode]{*[a 4 4 b] == ++*[a b]} we get address \lstinline[style=inlinecode]{2} from loobean \lstinline[style=inlinecode]{0} and address \lstinline[style=inlinecode]{3} from loobean \lstinline[style=inlinecode]{1}. To slot into \lstinline[style=inlinecode]{[c d]} let's simply do \lstinline[style=inlinecode]{*[[c d] 0 *[a 4 4 b]]}. This gives us either \lstinline[style=inlinecode]{c} or \lstinline[style=inlinecode]{d} which we then want to apply to \lstinline[style=inlinecode]{a}:
 
 \begin{lstlisting}[style=listingblock]
 *[a *[[c d] 0 *[[a 4 4 b]]]]
 \end{lstlisting}
 
+\noindent
 We are almost there, but where does the \lstinline[style=inlinecode]{*[2 3] 0 *[a 4 4 b]} come from? Isn't slotting into \lstinline[style=inlinecode]{[2 3]} with \lstinline[style=inlinecode]{2} or \lstinline[style=inlinecode]{3} from \lstinline[style=inlinecode]{*[a 4 4 b]} redundant? We get the same value back. However, if for some reason \lstinline[style=inlinecode]{*[a b]} is not a loobean but is still an atom, meaning it is an integer greater than \lstinline[style=inlinecode]{1} and if \lstinline[style=inlinecode]{[c d]} is a noun with many nested cells, \lstinline[style=inlinecode]{*[a 4 4 b]} will return an address greater than \lstinline[style=inlinecode]{3} which could still be a valid address. \lstinline[style=inlinecode]{*[[2 3] 0 *[a 4 4 b]]} forces this to return either \lstinline[style=inlinecode]{2} or \lstinline[style=inlinecode]{3} or to crash.
 
-Thus \lstinline[style=inlinecode]{*[a *[[c d] 0 *[[2 3] 0 *[a 4 4 b]]]]} or \lstinline[style=inlinecode]{if *[a b] then *[a c] else *[a d]}.
+Thus
+
+\begin{lstlisting}[style=listingblock]
+*[a *[[c d] 0 *[[2 3] 0 *[a 4 4 b]]]]
+\end{lstlisting}
+
+\noindent
+or
+
+\begin{lstlisting}[style=listingblock]
+if *[a b] then *[a c] else *[a d]
+\end{lstlisting}
 
 \subsection*{Converting Opcode 6 to Opcodes 0 through 5}
 
@@ -198,18 +212,21 @@ Let's start at the end. In order to construct \lstinline[style=inlinecode]{[0 *[
 [0 *[a 4 4 b]] == [*[a 1 0] *[a 4 4 b]] == *[a [1 0] 4 4 b]
 \end{lstlisting}
 
+\noindent
 Let's say \lstinline[style=inlinecode]{=x [[1 0] 4 4 b]}. This gives us:
 
 \begin{lstlisting}[style=listingblock]
 [0 *[a 4 4 b]] == *[a x]
 \end{lstlisting}
 
+\noindent
 Excellent. We have started to simplify our expression. We now have:
 
 \begin{lstlisting}[style=listingblock]
 *[a 6 b c d] == *[a *[[c d] 0 *[[2 3] *[a x]]]]
 \end{lstlisting}
 
+\noindent
 Hopefully you see how can we can repeat this process. Let's look at \lstinline[style=inlinecode]{*[[2 3] *[a x]]}. This has nested expression evaluations. This suggests Nock 2. For Nock 2, we want to get our expression in the form \lstinline[style=inlinecode]{*[*[a m] *[a n]]} so that we can recover the original expression \lstinline[style=inlinecode]{*[a 2 m n]}. (This looks like what we did in our first step, but don't be fooled. In the first step we were building a cell. In this step, we are building an expression evaluation.) Notice that \lstinline[style=inlinecode]{[2 3] == *[a 1 2 3]}. This gives us:
 
 \begin{lstlisting}[style=listingblock]
@@ -224,6 +241,7 @@ Let's say \lstinline[style=inlinecode]{=y [2 [1 2 3] x]}. This gives us:
 *[[2 3] *[a x]] == *[a y]
 \end{lstlisting}
 
+\noindent
 We now have:
 
 \begin{lstlisting}[style=listingcode]
@@ -242,6 +260,7 @@ So we now have:
 *[a 6 b c d] == *[a *[[c d] *[a [1 0] y]]]
 \end{lstlisting}
 
+\noindent
 \lstinline[style=inlinecode]{*[[c d] *[a [1 0] y]]} has nested expression evaluations. We know what to do here.
 
 \begin{lstlisting}[style=listingblock]
@@ -250,6 +269,7 @@ So we now have:
   *[a 2 [1 c d] [1 0] y]
 \end{lstlisting}
 
+\noindent
 This is starting to get a little verbose again. Let's substitute:
 \lstinline[style=inlinecode]{=z [2 [1 c d] [1 0] y]}. This gives us:
 
@@ -258,24 +278,28 @@ This is starting to get a little verbose again. Let's substitute:
   *[[c d] 0 *[a y]] == *[a z]
 \end{lstlisting}
 
+\noindent
 So now we have:
 
 \begin{lstlisting}[style=listingblock]
 *[a 6 b c d] == *[a *[a z]]
 \end{lstlisting}
 
+\noindent
 More nested evaluation expressions.
 
 \begin{lstlisting}[style=listingblock]
 *[a *[a z]] == *[*[a 0 1] *[a z]] == *[a 2 [0 1] z]
 \end{lstlisting}
 
+\noindent
 Finally, we have:
 
 \begin{lstlisting}[style=listingblock]
 *[a 6 b c d] == *[a 2 [0 1] z]
 \end{lstlisting}
 
+\noindent
 And that's the whole expression. Let's substitute back in:
 
 \begin{lstlisting}[style=listingblock]
@@ -284,6 +308,7 @@ And that's the whole expression. Let's substitute back in:
   *[a 2 [0 1] 2 [1 c d] [1 0] 2 [1 2 3] [1 0] 4 4 b]
 \end{lstlisting}
 
+\noindent
 This is Nock 6 written with only Nock 0 through 5.
 
 \subsection*{Nock 6 Primitive Equivalent}
@@ -323,7 +348,7 @@ This is not quite as intuitive as the Nock 9 pseudocode operator equivalent. The
 
 This is equivalent to the original definition. Like \lstinline[style=inlinecode]{#} hax, this pseudocode operator is not required for Turing completeness. \lstinline[style=inlinecode]{*} tar, \lstinline[style=inlinecode]{?} wut, \lstinline[style=inlinecode]{+} lus, \lstinline[style=inlinecode]{=} tis, and \lstinline[style=inlinecode]{/} fas are enough for this. 
 
-\section{Deriving Nock 11}
+\section{Deriving Opcode 11}
 
 Even though we don't need Nock 11 to build Nock 10, for the sake of our collective mania, let's note that Nock 11 can also trivially be written as a noun. The definition of Nock 11 is:
 
@@ -361,7 +386,7 @@ to compute \lstinline[style=inlinecode]{*[a c]}.
 *[a 11 b c] ====== *[a c]
 \end{lstlisting}
 
-\section{Explaining Nock 10}
+\section{Explaining Opcode 10}
 
 For convenience, let's restate Nock 10 and the \lstinline[style=inlinecode]{#} hax edit operator.
 
@@ -373,11 +398,12 @@ For convenience, let's restate Nock 10 and the \lstinline[style=inlinecode]{#} h
 #[(a + a + 1) b c] == #[a [/[(a + a) c] b] c]
 \end{lstlisting}
 
+\noindent
 Nock 10 is defined in terms of the \lstinline[style=inlinecode]{#} hax edit operator. So let's derive this first.
 
-\subsection{Explaining the \texttt{\#} edit operator}
+\subsection{The \texttt{\#} edit operator}
 
-Let's define \lstinline[style=inlinecode]{#} as a function of three inputs, \lstinline[style=inlinecode]{x}, \lstinline[style=inlinecode]{y}, and \lstinline[style=inlinecode]{z}. This says replace what's in slot \lstinline[style=inlinecode]{x} of \lstinline[style=inlinecode]{z} with \lstinline[style=inlinecode]{y}. In fact, let's rewrite the pseudocode with these inputs.
+Let's define \lstinline[style=inlinecode]{#} hax as a function of three inputs, \lstinline[style=inlinecode]{x}, \lstinline[style=inlinecode]{y}, and \lstinline[style=inlinecode]{z}. This says replace what's in slot \lstinline[style=inlinecode]{x} of \lstinline[style=inlinecode]{z} with \lstinline[style=inlinecode]{y}. In fact, let's rewrite the pseudocode with these inputs.
 
 \begin{lstlisting}[style=listingblock]
 #[(x := 1) y z] ========= y
@@ -388,6 +414,7 @@ Let's define \lstinline[style=inlinecode]{#} as a function of three inputs, \lst
 What are we doing here? Let's first note that there is really no way for us to ``edit" a noun. Really what we are doing is producing a new noun which is exactly the same as the old noun except in the specified way. If \lstinline[style=inlinecode]{x} is \lstinline[style=inlinecode]{1}, we are slotting into the root address of the noun \lstinline[style=inlinecode]{z} and replacing it with \lstinline[style=inlinecode]{y}, so we can get our "edited" noun simply by returning \lstinline[style=inlinecode]{y}. For any \lstinline[style=inlinecode]{x} greater than \lstinline[style=inlinecode]{1}, however, we have to create an entirely new noun. But creating complex nouns from scratch is hard. Creating a single \emph{cell}, on the other hand, is easy.
 
 To make this easier to understand, let's say \lstinline[style=inlinecode]{v := /[x z]}. \lstinline[style=inlinecode]{v} is the noun we will be replacing with \lstinline[style=inlinecode]{y}; the current occupant of slot \lstinline[style=inlinecode]{x} in noun \lstinline[style=inlinecode]{z}.  This noun \lstinline[style=inlinecode]{v} has a "sibling noun" which we will call \lstinline[style=inlinecode]{w}. \lstinline[style=inlinecode]{v} is either the head or the tail of its "parent noun" \lstinline[style=inlinecode]{u}. Below, we diagram the two possible cases.
+\newpage
 
 \begin{lstlisting}[style=listingblock]
       z              z
@@ -430,13 +457,15 @@ We are trying to recreate the \lstinline[style=inlinecode]{#} hax edit operator 
 *[[x y z] hax] == #[x y z]
 \end{lstlisting}
 
+\noindent
 Let's crash immediately if \lstinline[style=inlinecode]{x} is a cell. This will make use of Nock 6. If \lstinline[style=inlinecode]{x-is-cell}, then \lstinline[style=inlinecode]{crash}; else \lstinline[style=inlinecode]{check-x-0} (we will proceed to check another degenerate case):
 
 \begin{lstlisting}[style=listingblock]
 *[[x y z] 6 x-is-cell crash check-x-0]
 \end{lstlisting}
 
-For the sake of our OCD, we can start to convert this to Nocks 0 through 5 using our definition:
+\noindent
+For the sake of our \textsc{ocd}, we can start to convert this to opcodes 0 through 5 using our definition:
 
 \begin{lstlisting}[style=listingcode]
 *[a 6 b c d] == *[a 2 [0 1]
@@ -450,6 +479,7 @@ For the sake of our OCD, we can start to convert this to Nocks 0 through 5 using
                 2 [1 2 3] [1 0] 4 4 x-is-cell]
 \end{lstlisting}
 
+\noindent
 To check if \lstinline[style=inlinecode]{x} is a cell, we use Nock 3:
 
 \begin{lstlisting}[style=listingblock]
@@ -457,6 +487,7 @@ To check if \lstinline[style=inlinecode]{x} is a cell, we use Nock 3:
 =x-is-cell [3 0 2]
 \end{lstlisting}
 
+\noindent
 To crash, we can simply try to slot into non-existing address \lstinline[style=inlinecode]{0}:
 
 \begin{lstlisting}[style=listingblock]
@@ -464,6 +495,7 @@ To crash, we can simply try to slot into non-existing address \lstinline[style=i
 =crash [0 0]
 \end{lstlisting}
 
+\noindent
 We should also crash if \lstinline[style=inlinecode]{x == 0}:
 
 \begin{lstlisting}[style=listingblock]
@@ -472,6 +504,7 @@ We should also crash if \lstinline[style=inlinecode]{x == 0}:
             [1 0] 2 [1 2 3] [1 0] 4 4 x-is-0]
 \end{lstlisting}
 
+\noindent
 To check if \lstinline[style=inlinecode]{x == 0}, we use Nock 5:
 
 \begin{lstlisting}[style=listingblock]
@@ -479,30 +512,35 @@ To check if \lstinline[style=inlinecode]{x == 0}, we use Nock 5:
 =x-is-0 [5 [0 2] 1 0]
 \end{lstlisting}
 
+\noindent
 In order to make recursive calls, we are going to want to store our formula in the head of our subject so that we can access it from within the formula.
 
 \begin{lstlisting}[style=listingblock]
 [hax-formula x y z]
 \end{lstlisting}
 
+\noindent
 We can do this with Nock 8 and Nock 9. With Nock 8, we will pin \lstinline[style=inlinecode]{hax-formula} to the head of the subject and then call this head on the modified subject using Nock 9.
 
 \begin{lstlisting}[style=listingblock]
 *[[x y z] 8 [1 hax-formula] call-head]
 \end{lstlisting}
 
+\noindent
 Recall that \lstinline[style=inlinecode]{*[a 8 b c] == *[a 2 [b 0 1] 1 c]}.
 
 \begin{lstlisting}[style=listingblock]
 =launch [2 [[1 hax-formula] 0 1] 1 call-head]
 \end{lstlisting}
 
+\noindent
 To call the head of the modified subject on itself:
 
 \begin{lstlisting}[style=listingblock]
 *[[hax-formula x y z] 9 2 0 1]
 \end{lstlisting}
 
+\noindent
 Recall that \lstinline[style=inlinecode]{*[a 9 b c] == *[a 2 c 1 2 [0 1] 0 b]}.
 
 \begin{lstlisting}[style=listingblock]
@@ -510,6 +548,7 @@ Recall that \lstinline[style=inlinecode]{*[a 9 b c] == *[a 2 c 1 2 [0 1] 0 b]}.
   [[hax-formula x y z] 2 [0 1] 1 2 [0 1] 0 2]
 \end{lstlisting}
 
+\noindent
 Notice that this simplifies to:
 
 \begin{lstlisting}[style=listingblock]
@@ -529,6 +568,7 @@ Now let's develop \lstinline[style=inlinecode]{hax-formula}. The subject we are 
   \item \lstinline[style=inlinecode]{z} is at slot \lstinline[style=inlinecode]{15}.
 \end{itemize}
 
+\noindent
 Let's deal with the first real branch.  If \lstinline[style=inlinecode]{x == 1}, then we return \lstinline[style=inlinecode]{y}; else, we \lstinline[style=inlinecode]{recur-hax}:
 
 \begin{lstlisting}[style=listingblock]
@@ -540,6 +580,7 @@ Let's deal with the first real branch.  If \lstinline[style=inlinecode]{x == 1},
 =return-y [0 14]
 \end{lstlisting}
 
+\noindent
 Excellent. Now we are getting to the recursive part of our algorithm. We have already dealt with the base case. Now in the non-base case we want to call \lstinline[style=inlinecode]{hax-formula} on new parameters \lstinline[style=inlinecode]{[new-x new-y new-z]}. Let us imagine that there is a function \lstinline[style=inlinecode]{new-params} which takes subject \lstinline[style=inlinecode]{[x y z]} and returns \lstinline[style=inlinecode]{[new-x new-y new-z]}.  We can write this function later.
 
 First, we want to create a cell:
@@ -560,9 +601,11 @@ And we want to call the head of this new cell on itself:
 =recur-hax [2 new-cell 1 2 [0 1] 0 2]
 \end{lstlisting}
 
+\noindent
 When trying to extract new parameters from \lstinline[style=inlinecode]{[x y z]}, we come to another branch. We know at this point that \lstinline[style=inlinecode]{x} is not a cell and \lstinline[style=inlinecode]{x > 1}. Now we need to check if \lstinline[style=inlinecode]{x} is even:
 
-If \lstinline[style=inlinecode]{x} is even, return the following parameter updates:
+\begin{itemize}
+  \item  If \lstinline[style=inlinecode]{x} is even, return the following parameter updates:
 
 \begin{lstlisting}[style=listingblock]
 x := x/2
@@ -570,8 +613,7 @@ y := [y /[x+1 z]]
 z := z
 \end{lstlisting}
 
-\noindent
-Else (if \lstinline[style=inlinecode]{x} is odd), return the following parameter updates:
+  \item  Else (if \lstinline[style=inlinecode]{x} is odd), return the following parameter updates:
 
 \begin{lstlisting}[style=listingblock]
 x := (x-1)/2
@@ -579,6 +621,9 @@ y := [/[x-1 z] y]
 z := z
 \end{lstlisting}
 
+\end{itemize}
+
+\noindent
 So there are basically three things we need. We need a decremented \lstinline[style=inlinecode]{x}, \lstinline[style=inlinecode]{x-1}. We need a loobean which returns \lstinline[style=inlinecode]{0} if \lstinline[style=inlinecode]{x} is even and \lstinline[style=inlinecode]{1} otherwise (if \lstinline[style=inlinecode]{x} is odd; we have already dealt with all other cases). And we need the floor of half of \lstinline[style=inlinecode]{x}---the ``parent address" of \lstinline[style=inlinecode]{x}.
 
 We can actually get all of these at the same time. By using a modified version of the decrement algorithm, we can count up to \lstinline[style=inlinecode]{x-1} using some \lstinline[style=inlinecode]{counter} variable, keep track of whether \lstinline[style=inlinecode]{counter+1} is even or odd in variable \lstinline[style=inlinecode]{iseven} and keep track of the ``parent address" of \lstinline[style=inlinecode]{counter+1} in variable \lstinline[style=inlinecode]{floorhalf}. When we get to \lstinline[style=inlinecode]{counter == x-1} we will have \lstinline[style=inlinecode]{x-1}, whether \lstinline[style=inlinecode]{x} is even, and the floor of half of \lstinline[style=inlinecode]{x}.
@@ -597,12 +642,14 @@ iseven      0  1  0  1  0  1  0  1  0
 floorhalf   1  1  2  2  3  3  4  4  5
 \end{lstlisting}
 
+\noindent
 Let's look at the format of our function. Our subject is \lstinline[style=inlinecode]{[x y z]}. We are going to pin \lstinline[style=inlinecode]{[counter iseven floorhalf]} to the head of this noun and then our \lstinline[style=inlinecode]{params-formula} for recursion to the head of that. So by the time our recursion starts, our subject will look like this:
 
 \begin{lstlisting}[style=listingblock]
 [params-formula [counter iseven floorhalf] x y z]
 \end{lstlisting}
 
+\noindent
 To pin \lstinline[style=inlinecode]{[[counter == 1] [iseven == 0] [floorhalf == 1]]} to the head of subject \lstinline[style=inlinecode]{[x y z]}, we run:
 
 \begin{lstlisting}[style=listingblock]
@@ -611,6 +658,7 @@ To pin \lstinline[style=inlinecode]{[[counter == 1] [iseven == 0] [floorhalf == 
 =new-params [2 [[1 1 0 1] 0 1] 1 pin-formula]
 \end{lstlisting}
 
+\noindent
 Next, we want to pin our \lstinline[style=inlinecode]{params-formula} to the head of this new subject:
 
 \begin{lstlisting}[style=listingblock]
@@ -619,6 +667,7 @@ Next, we want to pin our \lstinline[style=inlinecode]{params-formula} to the hea
 =pin-formula [2 [[1 params-formula] 0 1] 1 call-head]
 \end{lstlisting}
 
+\noindent
 Finally, we want to run this \lstinline[style=inlinecode]{params-formula}, which is in the head of this new subject, against the whole subject. We actually already created a function which accomplishes this. We called it \lstinline[style=inlinecode]{call-head}.
 
 \begin{lstlisting}[style=listingblock]
@@ -631,6 +680,7 @@ Okay. Now we're ready to develop \lstinline[style=inlinecode]{params-formula}, w
 [params-formula [counter iseven floorhalf] x y z]
 \end{lstlisting}
 
+\noindent
 (To save space we will write this as \lstinline[style=inlinecode]{[pf [c i f] x y z]}.)
 
 \begin{itemize}
@@ -666,6 +716,7 @@ To return parameters from \lstinline[style=inlinecode]{[pf [c i f] x y z]} we ne
                                   [1 0] 4 4 iseven]
 \end{lstlisting}
 
+\noindent
 Recall that if \lstinline[style=inlinecode]{x} is even, return the following parameter updates:
 
 \begin{lstlisting}[style=listingblock]
@@ -683,7 +734,15 @@ y := [/[x-1 z] y]
 z := z
 \end{lstlisting}
 
-This translates to the logic:  If \lstinline[style=inlinecode]{iseven} is \lstinline[style=inlinecode]{0}, return \lstinline[style=inlinecode]{[floorhalf [y /[+(x) z]] z]}; else, return: \lstinline[style=inlinecode]{[floorhalf [/[counter z] y] z]}.
+\noindent
+This translates to the logic:  If \lstinline[style=inlinecode]{iseven} is \lstinline[style=inlinecode]{0}, return:
+\begin{lstlisting}[style=listingblock]
+[floorhalf [y /[+(x) z]] z]
+\end{lstlisting}
+else, return:
+\begin{lstlisting}[style=listingblock]
+[floorhalf [/[counter z] y] z]
+\end{lstlisting}
 
 Let's try to build these cells:
 
@@ -715,7 +774,8 @@ z == *[[pf [c i f] x y z] 0 31]
              0 31]
 \end{lstlisting}
 
-Alright. We now have a formula to return new parameters when \lstinline[style=inlinecode]{x} is even and a formula to return new parameters when \lstinline[style=inlinecode]{x} is odd.
+\noindent
+All right, we now have a formula to return new parameters when \lstinline[style=inlinecode]{x} is even and a formula to return new parameters when \lstinline[style=inlinecode]{x} is odd.
 
 Now we need to actually get our modified decrement to count up to \lstinline[style=inlinecode]{x-1}, updating our other data with it. Remember, our \lstinline[style=inlinecode]{recur-pf} formula will be operating on subject:  
 
@@ -815,8 +875,10 @@ Okay! We have written our \lstinline[style=inlinecode]{#} hax edit operator as a
       [1 0] 4 4 x-is-cell]
 \end{lstlisting}
 
+\noindent
 Great! What does this look like?
 
+\newpage
 \begin{lstlisting}[style=listingcode]
 ::  hax definition in raw Nock
 [2 [0 1]
@@ -911,7 +973,7 @@ So, does it work?
 
 It appears so! We are inches away from the finish line.
 
-\section{Deriving Nock 10}
+\section{Deriving Opcode 10}
 
 We now have our \lstinline[style=inlinecode]{#} hax operator. The last thing we have to do is use it to create a Nock 10 which runs on subject \lstinline[style=inlinecode]{a} with parameters \lstinline[style=inlinecode]{b}, \lstinline[style=inlinecode]{c}, and \lstinline[style=inlinecode]{d}:
 
