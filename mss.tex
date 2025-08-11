@@ -6,7 +6,7 @@
 
 \newcommand{\authorname}{Thomas Lindstrom-Vautrin}
 \newcommand{\authorpatp}{\patp{niblyx-malnus}}
-% \newcommand{\affiliation}{Kamp Kikakee}
+\newcommand{\affiliation}{Groundwire Syndicate}
 
 %  Make first page footer:
 \fancypagestyle{firststyle}{%
@@ -28,7 +28,7 @@
 
 %%MANUSCRIPT
 \title{Deriving Nock Opcodes 6–11}
-\author{\authorname~\authorpatp}
+\author{\authorname~\authorpatp \\ \affiliation}
 \date{}
 
 \begin{document}
@@ -200,7 +200,7 @@ if *[a b] then *[a c] else *[a d]
 
 \subsection*{Converting Opcode 6 to Opcodes 0 through 5}
 
-To convert this to a single noun is straightforward enough, but it's a bit of a grind. To keep things as clean as possible, like in ~timluc-miptev's piece,\footnote{See \patp{timluc-miptev} (2025), pp.~XX--XX, this volume.} we will use variables in the dojo. Here is where we start:
+To convert this to a single noun is straightforward enough, but it's a bit of a grind. To keep things as clean as possible, like in ~timluc-miptev's piece,\footnote{See \patp{timluc-miptev}, pp.~1--45 in this volume.} we will use variables in the dojo. Here is where we start:
 
 \begin{lstlisting}[style=listingcode]
 *[a 6 b c d] == *[a *[[c d] 0 *[[2 3] 0 *[a 4 4 b]]]]
